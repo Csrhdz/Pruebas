@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escritorio</title>
+</head>
+
+<body>
+  <h2>Escritorio</h2>
+
+  <!-- Elementos específicos para administradores -->
+  <div id="adminPanel" style="display: none;">
+    <h3>Panel de Administrador</h3>
+          <!-- Formulario para agregar usuarios -->
+    <form id="addUserForm">
+      <h4>Agregar Usuario</h4>
+      <label for="name">Nombre:</label><br>
+      <input type="text" id="name" name="name" required><br>
+      <label for="email">Correo electrónico:</label><br>
+      <input type="email" id="email" name="email" required><br>
+      <label for="password">Contraseña:</label><br>
+      <input type="password" id="password" name="password" required><br>
+      <label for="role">Rol:</label><br>
+      <select id="role" name="role">
+        <option value="admin">Admin</option>
+        <option value="user">Usuario</option>
+      </select><br><br>
+      <button type="button" onclick="addUser()">Agregar Usuario</button>
+    </form>
+
+    <!-- Lista de usuarios -->
+    <div id="userList">
+      <h4>Usuarios Agregados</h4>
+      <ul id="users"></ul>
+    </div>
+  </div>
+
+  <div id="commonPanel" style="display: none;">
+    <h3>Panel De Usuario</h3>
+    <p id="welcomeMessage"></p>
+    <h2>Informacion del Usuario</h2>
+    <p id="userId"></p>
+    <a id="userLink" href="user_info.html?id=${user.id}">Ver Datos</a>
+  </div><br>
+
+    <!-- Botón para cerrar sesión -->
+    <button id="logoutBtn">Cerrar Sesión</button>
+  </div>
+
+  <script>
+    // Función para mostrar u ocultar el panel de administrador según el rol del usuario
+    function toggleAdminPanel(role) {
+      console.log('Rol:', role); 
+      if (role === 'admin') {
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('commonPanel').style.display = 'none';
+      } else {
+        document.getElementById('commonPanel').style.display = 'block';
+        document.getElementById('adminPanel').style.display = 'none';
+      }
+      
+    }
+
+    // Función para cerrar sesión
+    function logout() {
+      alert('Sesión cerrada');
+      window.location.href = '/';     }
+
+    // Evento click para el botón de cerrar sesión
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    // Función para agregar usuario
+    function addUser() {
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        role: document.getElementById('role').value
+      };
+      fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => response.json())
+      .then(newUser => {
+        console.log('Usuario agregado:', newUser);
+        alert('Usuario agregado exitosamente');
+        updateUserList();
+      })
+      .catch(error => console.error('Error al agregar usuario:', error));
+    }
+
+    // Función para eliminar usuario
+    function deleteUser(userId) {
+      fetch(`/api/users/${userId}`, {
+        method: 'DELETE'
+      })
+      .then(response => {
+        if (response.ok) {
+          alert('Usuario eliminado exitosamente');
+          updateUserList();
+        } else {
+          alert('Error al eliminar usuario');
+        }
+      })
+      .catch(error => console.error('Error al eliminar usuario:', error));
+    }
+
+    // Función para actualizar la lista de usuarios
+function updateUserList() {
+  fetch(`/api/users`)
+    .then(response => response.json())
+    .then(usersData => {
+      const userList = document.getElementById('users');
+      userList.innerHTML = ''; 
+      usersData.forEach(user => {
+        const userListItem = document.createElement('li');
+        const userLink = document.createElement('a');
+        userLink.textContent = user.name;
+        userLink.href = `user_info.html?id=${user.id}`; 
+        userListItem.appendChild(userLink);
+        document.getElementById('userLink').href = `user_info.html?id=${user.id}`;
+
+        // Agregar botón para eliminar usuario
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Eliminar';
+        deleteButton.addEventListener('click', () => deleteUser(user.id));
+        userListItem.appendChild(deleteButton);
+        userList.appendChild(userListItem);
+      });
+    })
+    .catch(error => console.error('Error al obtener la lista de usuarios:', error));
+}
+
+    // Función para inicializar la página
+    function initializePage() {
+  const userName = localStorage.getItem('userName');
+  const userRole = localStorage.getItem('userRole');
+  
+  // Mostrar u ocultar el panel de administrador según el rol del usuario
+  toggleAdminPanel(userRole);
+  
+  // Actualizar la lista de usuarios al cargar la página
+  updateUserList();
+}
+
+    // Llamar a la función initializePage después de que el DOM esté completamente cargado
+    window.onload = initializePage;
+  </script>
+</body>
+
+</html>

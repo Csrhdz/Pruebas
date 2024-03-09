@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Información del Usuario</title>
+</head>
+<body>
+  <h2>Información del Usuario</h2>
+
+  <div id="userInfo">
+ 
+    <p id="username"></p>
+
+    <button onclick="goBack()">Regresar</button>
+  </div>
+  <script>
+    // Obtener el ID del usuario de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id');
+    const userName = urlParams.get('username'); 
+
+    // Hacer una solicitud al servidor para obtener la información del usuario
+    if (userId) {
+      fetch(`/api/user_info/${userId}`)
+        .then(response => response.json())
+        .then(userData => {
+          const userInfoContainer = document.getElementById('userInfo');
+          const userInfoElement = document.createElement('div');
+          userInfoElement.innerHTML = `
+            <p><strong>Nombre de Usuario:</strong> ${userData.name}</p> <!-- Modificado para mostrar el nombre de usuario -->
+            <p><strong>Correo electrónico:</strong> ${userData.email}</p>
+            <p><strong>Contraseña:</strong> ${userData.password}</p>
+            <p><strong>Rol:</strong> ${userData.role}</p>         
+          `;
+          userInfoContainer.appendChild(userInfoElement);
+        })
+        .catch(error => console.error('Error al obtener la información del usuario:', error));
+    } else {
+      // Si no se proporciona un ID de usuario en la URL, mostrar un mensaje de error
+      const errorMessageElement = document.createElement('p');
+      errorMessageElement.textContent = 'Se requiere un ID de usuario para obtener la información.';
+      document.getElementById('userInfo').appendChild(errorMessageElement);
+    }
+    function goBack() {
+    window.location.href = '/dashboard.html'; 
+  }
+</script>
+
+</body>
+</html>
