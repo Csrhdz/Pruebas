@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 // Configuración de la conexión a PostgreSQL
 const pool = new Pool({
   user: 'postgres',
-  host: 'db', // nombre del servicio de la base de datos en Docker Compose
+  host: 'db', 
   database: 'postgres',
   password: 'postgres',
   port: 5432,
@@ -71,7 +71,7 @@ app.post('/users', async (req, res) => {
   }
 });
 
-// Más rutas y lógica para las otras operaciones CRUD...
+
 
 // Iniciar servidor
 app.listen(PORT, () => {
